@@ -10,21 +10,22 @@ from optparse import OptionParser
 def main():
     """ Deduplicate music files """
     parser = OptionParser()
-    parser.add_option("-d", "--directory", dest="dir",
-                      help="Directory in which to dedupe music files")
-    parser.add_option("-r", "--recursive", dest="dir", default=True,
-                      help="Search recursively in the directory. Defaults to True")
+    parser.add_option("-d", "--directory", dest="path",
+        help="Directory in which to (recursively) dedupe music files")
 
     (options, args) = parser.parse_args()
-
-    _check_args( options, args )
+    full_path = _get_full_path( parser, options )
 
     deduplicator = MusicDeduplicator()
+    deduplicator.set_directory( full_path )
     deduplicator.dedupe()
 
-def _check_args( options, args ):
-    print "Options: {0}".format(options)
-    print "Args: {0}".format(args)
+def _get_full_path( parser, options ):
+    if not (options.path and os.path.isdir(options.path) ):
+        parser.print_help()
+        print "Please specify a valid directory for music file deduplication."
+        sys.exit()
+    return os.path.abspath( options.path )
 
 if __name__ == '__main__':
     main()

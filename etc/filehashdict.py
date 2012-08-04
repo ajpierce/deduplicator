@@ -9,13 +9,15 @@ class FileHashDict:
     Keys are FileHashes
     Values are the number of collisions for a given hash """
 
-    def __init__( self ):
-        self.hash_dict = {}
+    def __init__( self, extensions=None):
+        self.file_dict = {}
         self.duplicates = []
+        self.uniques = []
+        self.extensions = extensions
 
     def purge_dict( self ):
         """ Deletes all records from the dict """
-        self.hash_dict = {}
+        self.file_dict = {}
 
     def add_file( self, path ):
         """ Adds the file at the given path to FileHashDict in the following
@@ -34,26 +36,34 @@ class FileHashDict:
 
         # -- Step 2
         hash_value = self._hash_file( path )
+        #print "Hash value is: {0}".format(hash_value)
 
         # -- Step 3
-        file_hash = FileHash( file_hash=hash_value, file_path=path )
+        file_hash = FileHash( hash_value=hash_value, file_path=path )
 
         # -- Step 4
-        if self.hash_dict.get(file_hash, False):
-            self.hash_dict[file_hash] += 1
+        if self.file_dict.has_key(file_hash.hash_value):
+            self.file_dict[file_hash.hash_value] += 1
             self.duplicates.append( file_hash )
         else:
-            self.hash_dict[file_hash] = 0
+            self.file_dict[file_hash.hash_value] = 0
+            self.uniques.append( file_hash )
 
     def print_dict( self ):
-        print self.hash_dict
+        print self.file_dict
 
-    def print_duplicates( self ):
-        print self.duplicates
+    def get_duplicates( self ):
+        return self.duplicates
 
+    def get_uniques( self ):
+        return self.uniques
+
+    # -- Private Helper Functions
     def _hash_file( self, path ):
-        hash_obj = hash()
-        for chunk in _chunk_generator( open(path, 'rb') ):
+        hash_obj = hashlib.sha256()
+        print "Hashing file: {0}".format(path)
+
+        for chunk in self._chunk_generator( open(path, 'rb') ):
             hash_obj.update( chunk )
 
         return hash_obj.digest()
@@ -65,3 +75,14 @@ class FileHashDict:
             if not chunk:
                 return
             yield chunk
+
+    # -- Overrides
+    def __str__( self ):
+        """
+        return str( "\n".join([ "{0}:{1}".format(
+            file_hash.get_path(), self.file_dict[file_hash] 
+            ) for file_hash in self.file_dict ]) )
+        """
+        return str( "\n".join([ "{0} :: {1}".format(
+            file_hash, self.file_dict[file_hash] 
+            ) for file_hash in self.file_dict ]) )
