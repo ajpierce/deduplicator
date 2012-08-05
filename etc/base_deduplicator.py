@@ -1,5 +1,6 @@
 import sys
 import os
+import glob
 from filehashdict import FileHashDict
 
 class Deduplicator( object ):
@@ -8,6 +9,7 @@ class Deduplicator( object ):
         self.file_hash_dict = FileHashDict()
         self.directory = None
         self.verbose = False
+        self.FILE_EXTENSIONS = [ '*' ]
 
     def set_directory( self, path ):
         self.directory = path
@@ -20,9 +22,10 @@ class Deduplicator( object ):
 
         print "Beginning deduplication process"
         for dirpath, dirnames, filenames in os.walk( self.directory ):
-            for filename in filenames:
-                full_path = os.path.join( dirpath, filename )
-                self.file_hash_dict.add_file( full_path )
+            for extension in self.FILE_EXTENSIONS:
+                root_path = os.path.join( dirpath, extension )
+                for filename in glob.glob( root_path ):
+                    self.file_hash_dict.add_file( filename )
 
         print "List of duplicates compiled."
         dupes = self.file_hash_dict.get_duplicates()

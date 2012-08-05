@@ -9,11 +9,10 @@ class FileHashDict:
     Keys are FileHashes
     Values are the number of collisions for a given hash """
 
-    def __init__( self, extensions=None):
+    def __init__( self ):
         self.file_dict = {}
         self.duplicates = []
         self.uniques = []
-        self.extensions = extensions
 
     def purge_dict( self ):
         """ Deletes all records from the dict """
